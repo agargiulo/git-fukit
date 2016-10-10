@@ -28,6 +28,8 @@ if exitcode.nonzero?
   $stderr.puts 'Error - This can only be run in a git repository'
   exit exitcode
 end
+starting_dir = Dir.getwd
+above_git = File.expand_path(File.join(git_root, '../'))
 
 message = <<-EOF
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%&
@@ -73,7 +75,7 @@ end
 
 TMP_GIT_CONFIG_FILENAME = "/tmp/#{$PID}-fukit-git-config".freeze
 FileUtils.cp(File.join(git_root, '.git/config'), TMP_GIT_CONFIG_FILENAME)
-Dir.chdir(File.expand_path(File.join(git_root, '../')))
+Dir.chdir(above_git)
 FileUtils.rm_rf(git_root)
 `git clone #{remotes[current_remote]['fetch']} -b #{current_branch} #{git_root}`
 FileUtils.mv(TMP_GIT_CONFIG_FILENAME, File.join(git_root, 'git.config.old'))
@@ -86,4 +88,4 @@ remotes.each_pair do |name, uris|
   end
   `git fetch #{name}`
 end
-$stderr.puts 'Now make sure you run: cd ../ && cd -'
+$stderr.puts "Now make sure you run: cd #{above_git} && cd #{starting_dir}"
