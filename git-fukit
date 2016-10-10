@@ -25,7 +25,7 @@ require 'English'
 git_root = `git rev-parse --show-toplevel`.chomp
 exitcode = $CHILD_STATUS.exitstatus
 if exitcode.nonzero?
-  $stderr.puts 'Error - This can only be run in a git directory'
+  $stderr.puts 'Error - This can only be run in a git repository'
   exit exitcode
 end
 
