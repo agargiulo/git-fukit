@@ -1,0 +1,89 @@
+#!/usr/bin/env ruby
+
+require 'fileutils'
+require 'English'
+
+#############################################
+####                                     ####
+##                                         ##
+#    git-fukit:                             #
+#              Because sometimes the best   #
+#              git solution is to fukit,    #
+#              rm the repo, and reclone it  #
+#                                           #
+#    Author:      Anthony Gargiulo          #
+#                   <anthony@agargiulo.com> #
+#    Version:     0.1.0                     #
+#    License:     MIT                       #
+#                                           #
+#    Inspiration: https://xkcd.com/1597/    #
+##                                         ##
+####                                     ####
+#############################################
+
+# Make note of the git root in case this was called in a subdir
+git_root = `git rev-parse --show-toplevel`.chomp
+exitcode = $CHILD_STATUS.exitstatus
+if exitcode.nonzero?
+  $stderr.puts 'Error - This can only be run in a git directory'
+  exit exitcode
+end
+
+message = <<-EOF
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%&
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%&
+%%%%%                                                       %%%%%
+%%%%%                                                       %%%%%
+%%%            THIS SOFTWARE WILL VERY MUCH DESTROY           %%%
+%%%            YOUR CURRENT GIT REPOSITORY FOR GOOD,          %%%
+%%%                                                           %%%
+%%%                  THERE IS /no/ GOING BACK                 %%%
+%%%                                                           %%%
+%%%                  THERE IS /no/ GOING BACK                 %%%
+%%%%%                                                       %%%%%
+%%%%%      you have been warned, do you wish to continue?   %%%%%
+%%%%%                                                       %%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%&
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%&
+EOF
+
+$stderr.puts message
+$stderr.print '(y/N)? '
+srs_response = gets.chomp.downcase || 'n'
+exit(1) unless srs_response == 'y'
+
+$stderr.puts 'Okay here we go then'
+
+# Get the ref name from git
+current_branch = `git symbolic-ref -q HEAD`.chomp
+# Remove the leading refs/heads/
+current_branch.sub!(%r{refs/heads/}, '')
+# Fallback on HEAD for a detached HEAD
+current_branch ||= 'HEAD'
+# So we know which remote to clone from later
+current_remote = `git config --get branch.#{current_branch}.remote`.chomp
+
+remotes = {}
+`git remote -v`.split("\n").each do |remote|
+  name, uri, type = remote.split(/[\t ]/)
+  type.gsub!(/[()]/, '')
+  remotes[name] ||= {}
+  remotes[name][type] = uri
+end
+
+TMP_GIT_CONFIG_FILENAME = "/tmp/#{$PID}-fukit-git-config".freeze
+FileUtils.cp(File.join(git_root, '.git/config'), TMP_GIT_CONFIG_FILENAME)
+Dir.chdir(File.expand_path(File.join(git_root, '../')))
+FileUtils.rm_rf(git_root)
+`git clone #{remotes[current_remote]['fetch']} -b #{current_branch} #{git_root}`
+FileUtils.mv(TMP_GIT_CONFIG_FILENAME, File.join(git_root, 'git.config.old'))
+Dir.chdir(git_root)
+remotes.each_pair do |name, uris|
+  next if name == current_remote
+  `git remote add #{name} #{uris['fetch']}`
+  if uris['push'] != uris['fetch']
+    `git remote set-url --push #{name} #{uris['push']}`
+  end
+  `git fetch #{name}`
+end
+$stderr.puts 'Now make sure you run: cd ../ && cd -'
