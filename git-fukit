@@ -88,4 +88,4 @@ remotes.each_pair do |name, uris|
   end
   `git fetch #{name}`
 end
-$stderr.puts "Now make sure you run: cd #{above_git} && cd #{starting_dir}"
+$stderr.puts "Now make sure you run: cd ./"
