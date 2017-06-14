@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 require 'fileutils'
 require 'English'
@@ -29,22 +30,22 @@ if exitcode.nonzero?
   exit exitcode
 end
 
-message = <<-EOF
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%                                                       %%%%%
-%%%%%                                                       %%%%%
-%%%            THIS SOFTWARE WILL VERY MUCH DESTROY           %%%
-%%%            YOUR CURRENT GIT REPOSITORY FOR GOOD,          %%%
-%%%                                                           %%%
-%%%                  THERE IS /no/ GOING BACK                 %%%
-%%%                                                           %%%
-%%%                  THERE IS /no/ GOING BACK                 %%%
-%%%%%                                                       %%%%%
-%%%%%      you have been warned, do you wish to continue?   %%%%%
-%%%%%                                                       %%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+message = <<~EOF
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %%%%%                                                       %%%%%
+  %%%%%                                                       %%%%%
+  %%%            THIS SOFTWARE WILL VERY MUCH DESTROY           %%%
+  %%%            YOUR CURRENT GIT REPOSITORY FOR GOOD,          %%%
+  %%%                                                           %%%
+  %%%                  THERE IS /no/ GOING BACK                 %%%
+  %%%                                                           %%%
+  %%%                  THERE IS /no/ GOING BACK                 %%%
+  %%%%%                                                       %%%%%
+  %%%%%      you have been warned, do you wish to continue?   %%%%%
+  %%%%%                                                       %%%%%
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 EOF
 
 $stderr.puts message
@@ -71,7 +72,7 @@ remotes = {}
   remotes[name][type] = uri
 end
 
-TMP_GIT_CONFIG_FILENAME = "/tmp/#{$PID}-fukit-git-config".freeze
+TMP_GIT_CONFIG_FILENAME = "/tmp/#{$PID}-fukit-git-config"
 FileUtils.cp(File.join(git_root, '.git/config'), TMP_GIT_CONFIG_FILENAME)
 FileUtils.rm_rf('./')
 
